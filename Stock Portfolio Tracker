@@ -1,0 +1,55 @@
+import pandas as pd
+class StockPortfolio:
+    def _init_(self):
+        self.portfolio = pd.DataFrame(columns=["Ticker", "Shares", "Price"])
+
+    def add_stock(self, ticker, shares, price):
+        if ticker in self.portfolio["Ticker"].values:
+            idx = self.portfolio.index[self.portfolio["Ticker"] == ticker].tolist()[0]
+            self.portfolio.at[idx, "Shares"] += shares
+            self.portfolio.at[idx, "Price"] = price  # Update the price to the latest one
+        else:
+            self.portfolio = self.portfolio.append({"Ticker": ticker, "Shares": shares, "Price": price}, ignore_index=True)
+
+    def remove_stock(self, ticker, shares):
+        if ticker in self.portfolio["Ticker"].values:
+            idx = self.portfolio.index[self.portfolio["Ticker"] == ticker].tolist()[0]
+            if self.portfolio.at[idx, "Shares"] > shares:
+                self.portfolio.at[idx, "Shares"] -= shares
+            else:
+                self.portfolio = self.portfolio.drop(idx).reset_index(drop=True)
+        else:
+            print(f"Stock {ticker} not found in portfolio")
+
+    def get_portfolio(self):
+        return self.portfolio
+
+    def total_value(self):
+        self.portfolio["Total"] = self.portfolio["Shares"] * self.portfolio["Price"]
+        return self.portfolio["Total"].sum()
+
+def main():
+    portfolio = StockPortfolio()
+    while True:
+        print("\n1. Add Stock\n2. Remove Stock\n3. View Portfolio\n4. View Total Value\n5. Exit")
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            ticker = input("Enter stock ticker: ").upper()
+            shares = int(input("Enter number of shares: "))
+            price = float(input("Enter price per share: "))
+            portfolio.add_stock(ticker, shares, price)
+        elif choice == '2':
+            ticker = input("Enter stock ticker: ").upper()
+            shares = int(input("Enter number of shares to remove: "))
+            portfolio.remove_stock(ticker, shares)
+        elif choice == '3':
+            print(portfolio.get_portfolio())
+        elif choice == '4':
+            print(f"Total Portfolio Value: ${portfolio.total_value():.2f}")
+        elif choice == '5':
+            break
+        else:
+            print("Invalid choice. Please try again.")
+
+if __name__ == "__main__":
+    main()
